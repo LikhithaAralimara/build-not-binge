@@ -13,6 +13,13 @@
   --muted:    #888888;
   --border:   #2a2a2a;
   --radius:   6px;
+  /* Heatmap tile levels */
+  --tile-0:   #161b22;
+  --tile-1:   #0e4429;
+  --tile-2:   #006d32;
+  --tile-3:   #26a641;
+  --tile-4:   #39d353;
+  --tile-break: rgba(41,128,185,0.45);
 }
 
 /* ── Reset & base ── */
@@ -159,20 +166,101 @@ main {
   font-weight: 500;
   margin-bottom: 20px;
 }
-.streak-badge {
+/* ── Streak heatmap (GitHub-style) ── */
+#streak-display { margin-top: 24px; margin-bottom: 8px; }
+
+#streak-text {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(39, 174, 96, 0.15);
-  border: 1px solid var(--success);
+  background: rgba(39, 174, 96, 0.12);
+  border: 1px solid rgba(39,174,96,0.35);
   color: var(--success);
-  padding: 6px 14px;
+  padding: 5px 13px;
   border-radius: 24px;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.03em;
+  margin-bottom: 12px;
 }
-.streak-badge.hidden { display: none; }
+#streak-text.hidden { display: none; }
+#streak-text::before { content: '🔥'; font-size: 0.85rem; }
+
+#streak-heatmap { display: inline-block; }
+
+.heatmap-month-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+.heatmap-day-spacer {
+  width: 26px;          /* matches day-label width */
+  flex-shrink: 0;
+}
+.heatmap-month-label {
+  width: 13px;
+  font-size: 0.6rem;
+  color: var(--muted);
+  text-align: left;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.heatmap-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 3px;
+}
+.heatmap-day-label {
+  width: 26px;
+  font-size: 0.6rem;
+  color: #555;
+  text-align: right;
+  padding-right: 4px;
+  flex-shrink: 0;
+}
+
+.heatmap-tile {
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  transition: opacity 150ms;
+  cursor: default;
+}
+.heatmap-tile:hover { opacity: 0.8; outline: 1px solid rgba(255,255,255,0.25); }
+
+.tile-future  { background: transparent; border: 1px solid #1a1a1a; }
+.tile-0       { background: var(--tile-0); }
+.tile-1       { background: var(--tile-1); }
+.tile-2       { background: var(--tile-2); }
+.tile-3       { background: var(--tile-3); }
+.tile-break   { background: var(--tile-break); }
+.tile-today   { outline: 1.5px solid rgba(255,255,255,0.4); outline-offset: 1px; }
+
+#streak-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding-left: 30px;
+}
+.legend-label { font-size: 0.6rem; color: #555; }
+.legend-tile {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+}
+
+.heatmap-best {
+  font-size: 0.68rem;
+  color: #555;
+  margin-top: 6px;
+  padding-left: 30px;
+}
 
 /* ── Section label ── */
 .section-label {

@@ -115,14 +115,138 @@ function evaluateStreak() {
   return streak;
 }
 
-function renderStreakBadge() {
-  const streak = getStorage('rdp_streak') || {};
-  const el = document.getElementById('streak-badge');
+function renderStreakHeatmap() {
+  const streak = getStorage('rdp_streak') || { currentStreak: 0, longestStreak: 0 };
+  const decisions = getStorage('rdp_decisions') || [];
+  const altLog = getStorage('rdp_alternative_log') || [];
+
+  // Build activity map: localDate → commit count
+  const activityMap = {};
+  decisions.forEach(d => {
+    const key = new Date(d.ts).toLocaleDateString('sv');
+    activityMap[key] = (activityMap[key] || 0) + 1;
+  });
+  // Break activities add a fractional signal (shown differently via CSS not count)
+  const breakMap = {};
+  altLog.forEach(a => {
+    const key = new Date(a.ts).toLocaleDateString('sv');
+    breakMap[key] = (breakMap[key] || 0) + 1;
+  });
+
+  // Streak text
+  const textEl = document.getElementById('streak-text');
   if (streak.currentStreak >= 1) {
-    el.textContent = `${streak.currentStreak} day${streak.currentStreak !== 1 ? 's' : ''} in a row choosing work`;
-    el.classList.remove('hidden');
+    textEl.textContent = `${streak.currentStreak} day${streak.currentStreak !== 1 ? 's' : ''} in a row choosing work`;
+    textEl.classList.remove('hidden');
   } else {
-    el.classList.add('hidden');
+    textEl.classList.add('hidden');
+  }
+
+  // Build 10-week grid (Mon → Sun columns)
+  const WEEKS = 10;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayKey = today.toLocaleDateString('sv');
+
+  // Find the Monday that starts our grid
+  const dayOfWeekMon = (today.getDay() + 6) % 7; // Mon=0 … Sun=6
+  const gridStart = new Date(today);
+  gridStart.setDate(today.getDate() - dayOfWeekMon - (WEEKS - 1) * 7);
+
+  // Build weeks array: each entry is an array of 7 day objects
+  const weeksData = [];
+  for (let w = 0; w < WEEKS; w++) {
+    const week = [];
+    for (let d = 0; d < 7; d++) {
+      const day = new Date(gridStart);
+      day.setDate(gridStart.getDate() + w * 7 + d);
+      const key = day.toLocaleDateString('sv');
+      const commits = activityMap[key] || 0;
+      const breaks = breakMap[key] || 0;
+      const isFuture = day > today;
+      const isToday = key === todayKey;
+      week.push({ day, key, commits, breaks, isFuture, isToday });
+    }
+    weeksData.push(week);
+  }
+
+  // Month labels: detect where month changes across week columns
+  const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const container = document.getElementById('streak-heatmap');
+  container.innerHTML = '';
+
+  // Month label row
+  const monthRow = document.createElement('div');
+  monthRow.className = 'heatmap-month-row';
+  // Day labels spacer
+  const spacer = document.createElement('span');
+  spacer.className = 'heatmap-day-spacer';
+  monthRow.appendChild(spacer);
+
+  let lastMonth = -1;
+  weeksData.forEach((week) => {
+    const firstDayOfWeek = week[0].day;
+    const month = firstDayOfWeek.getMonth();
+    const label = document.createElement('span');
+    label.className = 'heatmap-month-label';
+    label.textContent = month !== lastMonth ? MONTH_NAMES[month] : '';
+    lastMonth = month;
+    monthRow.appendChild(label);
+  });
+  container.appendChild(monthRow);
+
+  // Grid rows (one per day of week)
+  for (let d = 0; d < 7; d++) {
+    const row = document.createElement('div');
+    row.className = 'heatmap-row';
+
+    const dayLabel = document.createElement('span');
+    dayLabel.className = 'heatmap-day-label';
+    dayLabel.textContent = DAY_LABELS[d];
+    row.appendChild(dayLabel);
+
+    weeksData.forEach(week => {
+      const cell = week[d];
+      const tile = document.createElement('span');
+      tile.className = 'heatmap-tile';
+
+      if (cell.isFuture) {
+        tile.classList.add('tile-future');
+      } else if (cell.commits === 0 && cell.breaks === 0) {
+        tile.classList.add('tile-0');
+      } else if (cell.commits === 0 && cell.breaks > 0) {
+        tile.classList.add('tile-break');
+      } else if (cell.commits === 1) {
+        tile.classList.add('tile-1');
+      } else if (cell.commits === 2) {
+        tile.classList.add('tile-2');
+      } else {
+        tile.classList.add('tile-3');
+      }
+
+      if (cell.isToday) tile.classList.add('tile-today');
+
+      // Tooltip
+      const dateStr = cell.day.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+      const parts = [];
+      if (cell.commits) parts.push(`${cell.commits} work session${cell.commits > 1 ? 's' : ''}`);
+      if (cell.breaks) parts.push(`${cell.breaks} break${cell.breaks > 1 ? 's' : ''}`);
+      tile.title = parts.length ? `${dateStr}: ${parts.join(', ')}` : dateStr;
+
+      row.appendChild(tile);
+    });
+
+    container.appendChild(row);
+  }
+
+  // Longest streak note
+  if (streak.longestStreak > 1) {
+    const note = document.createElement('div');
+    note.className = 'heatmap-best';
+    note.textContent = `Best streak: ${streak.longestStreak} days`;
+    container.appendChild(note);
   }
 }
 
@@ -233,7 +357,7 @@ function commitDecision() {
   transitionTo('committed');
   showCommittedOverlay(goal.text, task, streak);
   renderHistory();
-  renderStreakBadge();
+  renderStreakHeatmap();
 }
 
 // ── 8. COMMITTED OVERLAY (fresh commit) ──────────────────────────────────────
@@ -774,9 +898,9 @@ function wireEvents() {
 function renderNormalPage() {
   renderShameBar();
   renderGoals();
-  renderStreakBadge();
+  renderStreakHeatmap();
   renderHistory();
-  wireAlternatives();
+  // wireAlternatives is called once inside wireEvents — not here
 }
 
 function runNormalInit() {

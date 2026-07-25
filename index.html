@@ -73,7 +73,18 @@
     <section id="hero">
       <h1 id="hero-message">Watch it on TV<br>if you really wanna watch it</h1>
       <p id="hero-sub">But right now — it's time to build something.</p>
-      <div id="streak-badge" class="hidden streak-badge"></div>
+      <div id="streak-display">
+        <div id="streak-text" class="hidden"></div>
+        <div id="streak-heatmap"></div>
+        <div id="streak-legend">
+          <span class="legend-label">Less</span>
+          <span class="legend-tile" style="background:var(--tile-0)"></span>
+          <span class="legend-tile" style="background:var(--tile-1)"></span>
+          <span class="legend-tile" style="background:var(--tile-2)"></span>
+          <span class="legend-tile" style="background:var(--tile-3)"></span>
+          <span class="legend-label">More</span>
+        </div>
+      </div>
     </section>
 
     <!-- Goal Selection -->
