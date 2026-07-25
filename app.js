@@ -686,15 +686,24 @@ function wireAlternatives() {
 
 // ── 12. DECISION HISTORY ──────────────────────────────────────────────────────
 
+const ALT_META = {
+  water: { icon: '💧', label: 'Drank water' },
+  dance: { icon: '🎵', label: 'Danced' },
+  walk:  { icon: '🚶', label: 'Went for a walk' },
+  book:  { icon: '📖', label: 'Read' },
+};
+
 function renderHistory() {
   const decisions = getStorage('rdp_decisions') || [];
-  const list = document.getElementById('history-list');
-  const empty = document.getElementById('history-empty');
-  const countEl = document.getElementById('history-count');
+  const altLog    = getStorage('rdp_alternative_log') || [];
+  const list      = document.getElementById('history-list');
+  const empty     = document.getElementById('history-empty');
+  const countEl   = document.getElementById('history-count');
 
-  countEl.textContent = decisions.length;
+  const total = decisions.length + altLog.length;
+  countEl.textContent = total;
 
-  if (decisions.length === 0) {
+  if (total === 0) {
     list.innerHTML = '';
     empty.classList.remove('hidden');
     return;
@@ -702,27 +711,55 @@ function renderHistory() {
   empty.classList.add('hidden');
   list.innerHTML = '';
 
-  decisions.forEach(dec => {
+  // Merge and sort newest-first
+  const decItems = decisions.map(d => ({ kind: 'decision', ts: d.ts, data: d }));
+  const altItems = altLog.map(a => ({ kind: 'alt', ts: a.ts, data: a }));
+  const allItems = [...decItems, ...altItems].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+
+  allItems.forEach(item => {
     const entry = document.createElement('div');
-    entry.className = 'history-entry' + (dec.outcome ? ' has-outcome' : '');
-    entry.dataset.id = dec.id;
 
-    const ts = formatTs(dec.ts);
-    const workLine = dec.workMinutes ? `<span class="history-work-mins">${dec.workMinutes} min worked</span>` : '';
-    const outcomeHtml = dec.outcome
-      ? `<div class="history-outcome"><span class="outcome-check">✓</span> ${escapeHtml(dec.outcome)} ${workLine}</div>
-         <button class="add-outcome-btn" data-id="${dec.id}">Edit</button>`
-      : `<button class="add-outcome-btn" data-id="${dec.id}">Add outcome →</button>`;
+    if (item.kind === 'decision') {
+      const dec = item.data;
+      entry.className = 'history-entry' + (dec.outcome ? ' has-outcome' : '');
+      entry.dataset.id = dec.id;
 
-    entry.innerHTML = `
-      <div class="history-ts">${ts}</div>
-      <div class="history-goal">${escapeHtml(dec.goalText)}</div>
-      <div class="history-task">"${escapeHtml(dec.microTask)}"</div>
-      ${outcomeHtml}
-    `;
-    entry.querySelector('.add-outcome-btn').addEventListener('click', () => {
-      openOutcomeForm(dec.id, entry, dec.outcome || '');
-    });
+      const ts = formatTs(dec.ts);
+      const workLine = dec.workMinutes ? `<span class="history-work-mins">${dec.workMinutes} min</span>` : '';
+      const outcomeHtml = dec.outcome
+        ? `<div class="history-outcome"><span class="outcome-check">✓</span> ${escapeHtml(dec.outcome)} ${workLine}</div>
+           <button class="add-outcome-btn" data-id="${dec.id}">Edit</button>`
+        : `<button class="add-outcome-btn" data-id="${dec.id}">Add outcome →</button>`;
+
+      entry.innerHTML = `
+        <div class="history-ts">${ts}</div>
+        <div class="history-goal">${escapeHtml(dec.goalText)}</div>
+        <div class="history-task">"${escapeHtml(dec.microTask)}"</div>
+        ${outcomeHtml}
+      `;
+      entry.querySelector('.add-outcome-btn').addEventListener('click', () => {
+        openOutcomeForm(dec.id, entry, dec.outcome || '');
+      });
+
+    } else {
+      // Mindful break entry
+      const a = item.data;
+      const meta = ALT_META[a.type] || { icon: '⚡', label: a.type };
+      const details = [];
+      if (a.details.actualMinutes) details.push(`${a.details.actualMinutes} min`);
+      if (a.details.pages)         details.push(`${a.details.pages} pages`);
+      if (a.details.bookTitle)     details.push(a.details.bookTitle);
+
+      entry.className = 'history-entry history-entry-break';
+      entry.innerHTML = `
+        <div class="history-ts">${formatTs(a.ts)}</div>
+        <div class="history-break-label">
+          <span class="break-icon">${meta.icon}</span>
+          <span>${meta.label}${details.length ? ' — ' + details.join(', ') : ''}</span>
+        </div>
+      `;
+    }
+
     list.appendChild(entry);
   });
 }
