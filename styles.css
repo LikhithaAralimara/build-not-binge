@@ -1,0 +1,547 @@
+/* ── Design tokens ── */
+:root {
+  --bg:       #0a0a0a;
+  --surface:  #111111;
+  --surface2: #1a1a1a;
+  --accent:   #FF6B00;
+  --accent-dim: #cc5500;
+  --shame:    #C0392B;
+  --success:  #27AE60;
+  --text:     #ffffff;
+  --muted:    #888888;
+  --border:   #2a2a2a;
+  --radius:   6px;
+}
+
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ── Shame bar ── */
+#shame-bar {
+  background: var(--shame);
+  color: #fff;
+  text-align: center;
+  padding: 10px 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.shame-divider { opacity: 0.6; }
+
+/* ── Overlays ── */
+#guilt-overlay,
+#committed-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.97);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 300ms ease;
+}
+#guilt-overlay.hidden,
+#committed-overlay.hidden { display: none; }
+
+.guilt-content,
+.committed-content {
+  text-align: center;
+  max-width: 480px;
+  padding: 40px 24px;
+}
+.guilt-icon { font-size: 3rem; margin-bottom: 24px; }
+.guilt-content h1 {
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 900;
+  margin-bottom: 16px;
+  line-height: 1.1;
+}
+.guilt-content p {
+  color: var(--muted);
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+}
+#guilt-dismiss {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 14px 32px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: var(--radius);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background 150ms ease;
+}
+#guilt-dismiss:hover { background: var(--accent-dim); }
+
+/* committed overlay */
+.committed-check {
+  font-size: 4rem;
+  color: var(--success);
+  margin-bottom: 20px;
+  animation: popIn 400ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.committed-content h1 {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 900;
+  color: var(--success);
+  margin-bottom: 16px;
+}
+#committed-goal-display {
+  font-size: 1.1rem;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+#committed-task-display {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-bottom: 28px;
+  font-style: italic;
+}
+.streak-badge-large {
+  background: var(--success);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 24px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: inline-block;
+  margin-bottom: 28px;
+}
+#committed-done-btn {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+#committed-done-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Main layout ── */
+main {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 48px 20px 80px;
+}
+
+/* ── Hero ── */
+#hero { margin-bottom: 52px; }
+#hero-message {
+  font-size: clamp(2.2rem, 6vw, 3.8rem);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+#hero-sub {
+  font-size: 1.1rem;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(39, 174, 96, 0.15);
+  border: 1px solid var(--success);
+  color: var(--success);
+  padding: 6px 14px;
+  border-radius: 24px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.streak-badge.hidden { display: none; }
+
+/* ── Section label ── */
+.section-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+/* ── Goal section ── */
+#goal-section { margin-bottom: 8px; }
+
+.goal-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 200ms ease;
+  user-select: none;
+}
+.goal-card:hover {
+  border-left-color: rgba(255, 107, 0, 0.5);
+  background: var(--surface2);
+}
+.goal-card.selected {
+  border-left-color: var(--accent);
+  background: var(--surface2);
+  transform: scale(1.005);
+}
+.goal-card-text {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  flex: 1;
+}
+.goal-card-arrow {
+  color: var(--muted);
+  font-size: 1rem;
+  transition: color 200ms ease, transform 200ms ease;
+}
+.goal-card.selected .goal-card-arrow { color: var(--accent); transform: translateX(3px); }
+
+.goal-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.goal-delete-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 150ms, color 150ms;
+}
+.goal-card:hover .goal-delete-btn { opacity: 1; }
+.goal-delete-btn:hover { color: var(--shame); }
+
+/* Add goal */
+#add-goal-trigger {
+  color: var(--muted);
+  font-size: 0.88rem;
+  cursor: pointer;
+  padding: 14px 18px;
+  transition: color 200ms;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  margin-top: 4px;
+}
+#add-goal-trigger:hover { color: var(--accent); border-color: rgba(255,107,0,0.4); }
+
+#add-goal-form {
+  margin-top: 8px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+  animation: slideDown 200ms ease;
+}
+#add-goal-form.hidden { display: none; }
+
+#add-goal-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.95rem;
+  padding: 12px 14px;
+  outline: none;
+  margin-bottom: 10px;
+  transition: border-color 150ms;
+}
+#add-goal-input:focus { border-color: var(--accent); }
+
+.add-goal-actions { display: flex; gap: 8px; }
+#add-goal-save {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 9px 20px;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms;
+}
+#add-goal-save:hover { background: var(--accent-dim); }
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 150ms;
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+/* ── Micro-task section ── */
+.slide-section { animation: slideDown 250ms ease; }
+.slide-section.hidden { display: none; }
+
+#microtask-section {
+  margin-top: 28px;
+  margin-bottom: 4px;
+}
+#microtask-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 1.05rem;
+  padding: 14px 16px;
+  outline: none;
+  transition: border-color 150ms, border-bottom-color 150ms;
+  margin-bottom: 8px;
+}
+#microtask-input:focus {
+  border-color: rgba(255,107,0,0.4);
+  border-bottom-color: var(--accent);
+}
+.hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+}
+#char-count {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 4px;
+  transition: color 200ms;
+}
+#char-count.ready { color: var(--success); }
+
+/* ── Commit button ── */
+#commit-wrapper {
+  margin-top: 24px;
+  margin-bottom: 48px;
+}
+#commit-btn {
+  width: 100%;
+  padding: 20px;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 200ms ease;
+  position: relative;
+  overflow: hidden;
+}
+#commit-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 150ms;
+}
+#commit-btn:hover:not(:disabled)::after { background: rgba(255,255,255,0.08); }
+#commit-btn:active:not(:disabled) { transform: scale(0.99); }
+#commit-btn:disabled {
+  background: #222;
+  color: #444;
+  cursor: not-allowed;
+}
+
+/* ── History section ── */
+#history-section {
+  border-top: 1px solid var(--border);
+  padding-top: 28px;
+}
+#history-toggle {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  transition: color 150ms;
+}
+#history-toggle:hover { color: var(--text); }
+#history-toggle span:first-child {
+  font-size: 0.7rem;
+  transition: transform 200ms;
+}
+#history-toggle.open span:first-child { transform: rotate(90deg); }
+
+#history-panel {
+  margin-top: 20px;
+}
+#history-panel.hidden { display: none; }
+
+.history-entry {
+  border-left: 2px solid var(--border);
+  padding: 12px 0 12px 16px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.history-entry::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 18px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.history-entry.has-outcome::before { background: var(--success); }
+
+.history-ts {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+  font-family: 'SF Mono', 'Fira Mono', monospace;
+}
+.history-goal {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: var(--text);
+}
+.history-task {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 8px;
+}
+.history-outcome {
+  font-size: 0.85rem;
+  color: rgba(39, 174, 96, 0.85);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.outcome-check { color: var(--success); font-weight: 700; }
+
+.add-outcome-btn {
+  background: none;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  font-size: 0.78rem;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 150ms;
+}
+.add-outcome-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.outcome-form { margin-top: 8px; }
+.outcome-textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.85rem;
+  padding: 10px 12px;
+  outline: none;
+  resize: vertical;
+  min-height: 64px;
+  margin-bottom: 8px;
+  font-family: inherit;
+  transition: border-color 150ms;
+}
+.outcome-textarea:focus { border-color: var(--accent); }
+.outcome-save-btn {
+  background: var(--success);
+  color: #fff;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-right: 8px;
+}
+.outcome-cancel-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 7px 12px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+#history-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 24px 0;
+}
+#history-empty.hidden { display: none; }
+
+/* Export button */
+#export-btn {
+  margin-top: 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 9px 20px;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  cursor: pointer;
+  width: 100%;
+  transition: all 150ms;
+}
+#export-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  main { padding: 32px 16px 60px; }
+  #hero-message { font-size: 2rem; }
+}

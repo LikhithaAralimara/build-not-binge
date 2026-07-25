@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What are you here for?</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Shame Bar -->
+  <div id="shame-bar">
+    <span id="shame-today"></span>
+    <span class="shame-divider"> · </span>
+    <span id="shame-week"></span>
+  </div>
+
+  <!-- Guilt Overlay (tab-switch trap) -->
+  <div id="guilt-overlay" class="hidden">
+    <div class="guilt-content">
+      <div class="guilt-icon">👀</div>
+      <h1>You tried to leave.</h1>
+      <p>That's okay. But you're back now.<br>Pick something and actually do it.</p>
+      <button id="guilt-dismiss">Get back to it →</button>
+    </div>
+  </div>
+
+  <!-- Committed Overlay (shown after commit) -->
+  <div id="committed-overlay" class="hidden">
+    <div class="committed-content">
+      <div class="committed-check">✓</div>
+      <h1>You're locked in.</h1>
+      <p id="committed-goal-display"></p>
+      <p id="committed-task-display"></p>
+      <div id="streak-committed-badge" class="hidden streak-badge-large"></div>
+      <button id="committed-done-btn">I finished / need a new task</button>
+    </div>
+  </div>
+
+  <main>
+    <!-- Hero -->
+    <section id="hero">
+      <h1 id="hero-message">Watch it on TV<br>if you really wanna watch it</h1>
+      <p id="hero-sub">But right now — it's time to build something.</p>
+      <div id="streak-badge" class="hidden"></div>
+    </section>
+
+    <!-- Goal Selection -->
+    <section id="goal-section">
+      <p class="section-label">WHAT ARE YOU ACTUALLY HERE TO BUILD?</p>
+      <div id="goal-list"></div>
+
+      <div id="add-goal-trigger">+ Add a goal</div>
+      <div id="add-goal-form" class="hidden">
+        <input id="add-goal-input" type="text" placeholder="Describe your goal clearly...">
+        <div class="add-goal-actions">
+          <button id="add-goal-save">Save goal</button>
+          <button id="add-goal-cancel" class="btn-ghost">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Micro-task (slides in after goal selected) -->
+    <section id="microtask-section" class="hidden slide-section">
+      <p class="section-label">WHAT SPECIFICALLY WILL YOU DO?</p>
+      <input id="microtask-input" type="text" placeholder='e.g. "Write the pitch deck intro slide"'>
+      <p class="hint">Vague = avoidance. Be specific. Min 10 characters.</p>
+      <div id="char-count">0 / 10 min</div>
+    </section>
+
+    <!-- Commit Button -->
+    <div id="commit-wrapper" class="hidden slide-section">
+      <button id="commit-btn" disabled>I'M DOING THIS</button>
+    </div>
+
+    <!-- Decision History -->
+    <section id="history-section">
+      <button id="history-toggle">
+        <span>▶</span> See your decision history (<span id="history-count">0</span> entries)
+      </button>
+      <div id="history-panel" class="hidden">
+        <div id="history-list"></div>
+        <div id="history-empty" class="hidden">
+          <p>No decisions yet. This will be your first.</p>
+        </div>
+        <button id="export-btn">Export this week's log</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
