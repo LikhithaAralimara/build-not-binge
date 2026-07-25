@@ -23,15 +23,31 @@ const DEFAULT_GOALS = [
   { id: 'g3', text: 'Creator OS app' },
   { id: 'g4', text: 'PVM — protein vending machine: create a pitch deck and just start pitching to people' },
   { id: 'g5', text: 'Mind Company — refine the idea to the max, register the company, start applying for grants' },
+  { id: 'g6', text: 'GoodCop BadCop / Double Agent' },
+  { id: 'g7', text: 'Learn how to publish apps on Play Store and App Store' },
+];
+
+const NEW_GOALS_V2 = [
+  { id: 'g6', text: 'GoodCop BadCop / Double Agent' },
+  { id: 'g7', text: 'Learn how to publish apps on Play Store and App Store' },
 ];
 
 function initStorage() {
   if (!getStorage('rdp_schema_version')) {
-    setStorage('rdp_schema_version', '1');
+    setStorage('rdp_schema_version', '2');
     setStorage('rdp_goals', DEFAULT_GOALS);
     setStorage('rdp_shame_counts', {});
     setStorage('rdp_decisions', []);
     setStorage('rdp_streak', { currentStreak: 0, lastCommitDate: null, longestStreak: 0 });
+    return;
+  }
+  // Migration: v1 → v2 — append new goals if not already present
+  if (getStorage('rdp_schema_version') === '1') {
+    const goals = getStorage('rdp_goals') || [];
+    const existingIds = new Set(goals.map(g => g.id));
+    NEW_GOALS_V2.forEach(g => { if (!existingIds.has(g.id)) goals.push(g); });
+    setStorage('rdp_goals', goals);
+    setStorage('rdp_schema_version', '2');
   }
 }
 
